@@ -1,0 +1,10 @@
+# Ambiente virtuale
+venv/
+
+# Cache di Python
+__pycache__/
+*.pyc
+
+# File di sistema (se usi Mac o Windows)
+.DS_Store
+Thumbs.db
