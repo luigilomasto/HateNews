@@ -8,7 +8,7 @@ INPUT_FILE = "Tesi_HateSpeech/data/processed/comments_analyzed.csv"
 IMG_DIR = "Tesi_HateSpeech/data/processed/plots"
 
 def main():
-    print("GENERAZIONE GRAFICI...")
+    print("GENERAZIONE GRAFICI (IN ITALIANO)...")
     
     # 1. Carica i dati
     try:
@@ -21,16 +21,29 @@ def main():
     if not os.path.exists(IMG_DIR):
         os.makedirs(IMG_DIR)
 
-    # Imposta lo stile
+    # --- TRADUZIONE ETICHETTE (Novità) ---
+    # Mappiamo le etichette inglesi in italiano corretto
+    translation_map = {
+        "Acceptable": "Accettabile",
+        "Inappropriate": "Inappropriato",
+        "Offensive": "Offensivo",
+        "Violent": "Violento"
+    }
+    
+    # Applica la traduzione alla colonna 'ai_label'
+    # Se trova un valore non presente nella mappa, lo lascia com'è
+    df['ai_label'] = df['ai_label'].map(translation_map).fillna(df['ai_label'])
+
+    # Imposta lo stile grafico
     sns.set_theme(style="whitegrid")
 
     # --- GRAFICO 1: DISTRIBUZIONE TOTALE (BAR PLOT) ---
     plt.figure(figsize=(10, 6))
     
-    # Ordine delle categorie per logica
-    order = ["Acceptable", "Inappropriate", "Offensive", "Violent"]
+    # Ordine delle categorie in italiano
+    order = ["Accettabile", "Inappropriato", "Offensivo", "Violento"]
     
-    # Conta le occorrenze
+    # Crea il grafico
     ax = sns.countplot(x='ai_label', data=df, order=order, palette="viridis")
     
     plt.title("Distribuzione delle Categorie di Hate Speech (Modello IMSyPP)", fontsize=14)
@@ -40,19 +53,20 @@ def main():
     # Aggiungi le percentuali sopra le barre
     total = len(df)
     for p in ax.patches:
-        percentage = '{:.1f}%'.format(100 * p.get_height()/total)
+        height = p.get_height()
+        if pd.isna(height): height = 0 # Gestione casi vuoti
+        percentage = '{:.1f}%'.format(100 * height/total)
         x = p.get_x() + p.get_width() / 2 - 0.05
-        y = p.get_height() + 20
-        ax.annotate(percentage, (x, y), size=12, weight='bold')
+        y = height + 20
+        ax.text(x, y, percentage, ha='center', size=12, weight='bold')
 
     # Salva
     save_path1 = os.path.join(IMG_DIR, "grafico_distribuzione.png")
     plt.savefig(save_path1, dpi=300)
-    print(f"✔ Grafico 1 salvato: {save_path1}")
+    print(f"✔ Grafico 1 salvato (Italiano): {save_path1}")
     plt.close()
 
     # --- GRAFICO 2: CONFRONTO HATE SPEECH REALE vs AI ---
-    # Questo grafico mostra: Dei commenti che erano VERAMENTE odio, come li ha classificati l'IA?
     if 'original_label' in df.columns:
         plt.figure(figsize=(10, 6))
         
@@ -65,12 +79,22 @@ def main():
         plt.xlabel("Classificazione Modello IMSyPP", fontsize=12)
         plt.ylabel("Conteggio", fontsize=12)
         
+        # Aggiunge etichette anche qui
+        total_hate = len(hate_only)
+        for p in ax2.patches:
+            height = p.get_height()
+            if pd.isna(height): height = 0
+            percentage = '{:.1f}%'.format(100 * height/total_hate)
+            x = p.get_x() + p.get_width() / 2 - 0.05
+            y = height + 5
+            ax2.text(x, y, percentage, ha='center', size=10)
+
         save_path2 = os.path.join(IMG_DIR, "grafico_confronto_hate.png")
         plt.savefig(save_path2, dpi=300)
-        print(f"✔ Grafico 2 salvato: {save_path2}")
+        print(f"✔ Grafico 2 salvato (Italiano): {save_path2}")
         plt.close()
 
-    print("\nFINITO! Trovi le immagini nella cartella 'data/processed/plots'")
+    print("\nFINITO! I grafici ora sono in italiano corretto.")
 
 if __name__ == "__main__":
     main()
