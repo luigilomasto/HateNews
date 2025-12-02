@@ -116,11 +116,6 @@ if page == "🏠 Analisi in Tempo Reale":
     # Header con colonne per centrare
     c1, c2, c3 = st.columns([1, 10, 1])
     with c2:
-        st.title("Analisi Automatica del Linguaggio")
-        st.markdown("""
-        Questa interfaccia permette di testare in tempo reale il modello di **Deep Learning** sviluppato per la tesi. 
-        Il sistema è in grado di rilevare sfumature linguistiche complesse, distinguendo tra opinioni legittime, linguaggio offensivo e incitamento all'odio.
-        """)
         st.markdown("---")
 
     col_input, col_space, col_result = st.columns([1.2, 0.1, 1])
