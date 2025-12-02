@@ -2,52 +2,44 @@ import os
 import pandas as pd
 from datasets import load_dataset
 
-# Percorsi di salvataggio
+# Paths
 DATA_DIR = "Tesi_HateSpeech/data/raw"
-COMMENTS_FILE = os.path.join(DATA_DIR, "comments_dataset.csv")
-TITLES_FILE = os.path.join(DATA_DIR, "titles_dataset.csv")
+OUTPUT_FILE = os.path.join(DATA_DIR, "comments_dataset.csv")
 
 def main():
-    if not os.path.exists(DATA_DIR):
-        os.makedirs(DATA_DIR)
+    print("\n--- DOWNLOAD DATASET EVALITA: HASPEEDE 2018 + 2020 ---\n")
 
-    print("\n--- DOWNLOAD DATASET (VIA HUGGING FACE) ---\n")
+    os.makedirs(DATA_DIR, exist_ok=True)
 
-    try:
-        # Scarichiamo il dataset "HateCheck" (versione italiana)
-        # È un dataset accademico ufficiale per testare i modelli di Hate Speech
-        print("Scaricamento dataset 'Paul/hatecheck-italian'...")
-        dataset = load_dataset("Paul/hatecheck-italian", split="test")
-        
-        # Convertiamo in DataFrame (Tabella)
-        df = pd.DataFrame(dataset)
-        
-        # Il dataset ha colonne: 'functionality', 'test_case', 'label_gold', etc.
-        # Lo adattiamo al nostro formato standard: 'text', 'label'
-        df_clean = pd.DataFrame()
-        df_clean['text'] = df['test_case']
-        df_clean['label'] = df['label_gold'] # h = hateful, nh = non-hateful
-        
-        # Mappiamo le etichette per chiarezza
-        df_clean['label'] = df_clean['label'].map({'h': 'Hate Speech', 'nh': 'Non Hate'})
+    # --- HASPEEDE 2018 ---
+    print("Scaricamento HaSpeeDe 2018...")
+    ds2018_train = load_dataset("valeriobiscione/haspeede", split="train")
+    ds2018_test = load_dataset("valeriobiscione/haspeede", split="test")
 
-        # SALVATAGGIO
-        # Usiamo lo stesso dataset sia per "commenti" che per "titoli" 
-        # per testare il sistema (visto che mancano titoli reali nel dataset)
-        
-        # 1. Salviamo come commenti
-        df_clean.to_csv(COMMENTS_FILE, index=False)
-        print(f"✔ Dataset Commenti salvato: {COMMENTS_FILE} ({len(df_clean)} righe)")
-        
-        # 2. Salviamo come titoli (ne prendiamo un campione diverso o uguale)
-        df_clean.to_csv(TITLES_FILE, index=False)
-        print(f"✔ Dataset Titoli salvato: {TITLES_FILE}")
-        
-        print("\n✔ Download completato con successo.")
-        print("Ora puoi eseguire 'analyze_data.py'.")
+    df2018 = pd.concat([pd.DataFrame(ds2018_train), pd.DataFrame(ds2018_test)])
+    df2018['source'] = '2018'
 
-    except Exception as e:
-        print(f"❌ Errore critico: {e}")
+    # --- HASPEEDE 2020 (HaSpeeDe 2) ---
+    print("Scaricamento HaSpeeDe 2020...")
+    ds2020_train = load_dataset("valeriobiscione/haspeede2", split="train")
+    ds2020_test = load_dataset("valeriobiscione/haspeede2", split="test")
+
+    df2020 = pd.concat([pd.DataFrame(ds2020_train), pd.DataFrame(ds2020_test)])
+    df2020['source'] = '2020'
+
+    # --- UNIONE DEI DATASET ---
+    df_all = pd.concat([df2018, df2020], ignore_index=True)
+
+    # Rinomina le colonne per uniformità
+    df_all = df_all[['text', 'label', 'source']]
+    df_all['label'] = df_all['label'].map({0: "Non Hate", 1: "Hate Speech"})
+
+    # Salvataggio finale
+    df_all.to_csv(OUTPUT_FILE, index=False)
+
+    print(f"\n✔ Dataset EVALITA unificato salvato in:\n{OUTPUT_FILE}")
+    print(f"Totale righe: {len(df_all)}")
+    print("\nOra puoi eseguire: analyze_data.py")
 
 if __name__ == "__main__":
     main()

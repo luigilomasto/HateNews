@@ -103,7 +103,7 @@ with st.sidebar:
         
         **Studente:** Stella Tavolo
         
-        **Relatore:** [Delfina Malandrino]
+        **Relatore:** Delfina Malandrino
         
         **Modello:** IMSyPP (BERT)
         **Anno Accademico:** 2024/2025
@@ -224,16 +224,19 @@ if page == "🏠 Analisi in Tempo Reale":
                     color_discrete_map=colors
                 )
                 fig.update_layout(
+                xaxis_title="",  # Rimuove la scritta "Confidenza"
                     showlegend=False, 
                     height=250, 
                     margin=dict(l=0, r=0, t=0, b=0),
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(0,0,0,0)',
-                    xaxis=dict(showgrid=False, showticklabels=False),
+                    xaxis=dict(showgrid=False, showticklabels=True),
                     yaxis=dict(showgrid=False),
                     font=dict(color="black") # Testo del grafico NERO
                 )
-                fig.update_xaxes(range=[0, 1]) 
+                fig.update_xaxes(range=[0, 1], tickfont=dict(color="black"))
+                fig.update_yaxes(tickfont=dict(color="black"))
+
                 st.plotly_chart(fig, use_container_width=True)
 
         else:
@@ -349,11 +352,10 @@ elif page == "📊 Risultati della Ricerca":
 
 
         st.markdown(
-            "*Tossicità Complessiva:* "
-            "<span style='color:black; font-weight:800'>41.3%</span><br>"
-            "<span style='font-size:0.85em;'>Somma delle categorie negative</span>",
-            unsafe_allow_html=True
-        )
+    "*Tossicità Complessiva:* "
+    "<span style='color:black; font-weight:800'>41.3%</span>",
+    unsafe_allow_html=True
+)
 
         
         
